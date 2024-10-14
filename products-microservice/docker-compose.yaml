@@ -1,0 +1,28 @@
+services:
+  products-microservice:
+    build: .
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - products-db
+      - products-redis
+
+  products-db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: ambassador-products
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - .dbdata:/var/lib/mysql
+    ports:
+      - "33066:3306"
+
+  products-redis:
+    image: redis
+    ports:
+      - "6379:6379"
