@@ -4,6 +4,8 @@ node_modules
 
 /.dbdata
 
+firebase_account_key.json
+
 # local env files
 .env
 .env.local
