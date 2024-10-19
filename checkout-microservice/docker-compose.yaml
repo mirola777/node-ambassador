@@ -1,0 +1,9 @@
+services:
+  checkout-microservice:
+    build: .
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
