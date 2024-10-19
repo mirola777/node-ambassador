@@ -1,5 +1,5 @@
 services:
-  auth-microservice:
+  email-adapter:
     build: .
     ports:
       - "${PORT}:${PORT}"

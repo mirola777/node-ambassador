@@ -1,5 +1,5 @@
 services:
-  auth-microservice:
+  checkout-microservice:
     build: .
     ports:
       - "${PORT}:${PORT}"
