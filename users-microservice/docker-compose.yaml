@@ -9,7 +9,6 @@ services:
       - .env
     depends_on:
       - users-db
-      - users-redis
 
   users-db:
     image: mysql:8
