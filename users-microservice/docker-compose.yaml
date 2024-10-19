@@ -1,0 +1,23 @@
+services:
+  users-microservice:
+    build: .
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - users-db
+      - users-redis
+
+  users-db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: ambassador-users
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - .dbdata:/var/lib/mysql
+    ports:
+      - "33066:3306"
