@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Request, Response } from "express";
 import { getMicroserviceUrl } from "./firebase.config";
 
@@ -14,7 +14,7 @@ export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
 
     const targetUrl = `${serviceUrl}${req.originalUrl.replace(
       `/api/${microservice}`,
-      ""
+      "/api"
     )}`;
 
     console.log(`Proxying request to ${targetUrl}`);
@@ -34,7 +34,19 @@ export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
 
     res.status(response.status).send(response.data);
   } catch (error) {
-    console.log(error);
-    res.status(500).send("Internal Server Error");
+    if (error instanceof AxiosError) {
+      const axiosError = error as AxiosError;
+
+      if (axiosError.response) {
+        res.status(axiosError.response.status).send(axiosError.response.data);
+        return;
+      }
+    }
+
+    const errorMessage = (error as Error).message || "Internal Server Error";
+
+    console.error(`There was an error: ${errorMessage}`);
+
+    res.status(500).send(errorMessage);
   }
 }
