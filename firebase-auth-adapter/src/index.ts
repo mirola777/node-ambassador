@@ -3,15 +3,17 @@ import { EachMessagePayload, Kafka } from "kafkajs";
 
 dotenv.config();
 
-const port = process.env.PORT || 8000;
+const kafkaUsername = process.env.KAFKA_USERNAME;
+const kafkaPassword = process.env.KAFKA_PASSWORD;
+const kafkaBroker = process.env.KAFKA_BROKER;
 
 const kafka = new Kafka({
   clientId: "email-client",
-  brokers: ["host.docker.internal:9094"],
+  brokers: [kafkaBroker],
   sasl: {
     mechanism: "plain",
-    username: "user",
-    password: "bitnami",
+    username: kafkaUsername,
+    password: kafkaPassword,
   },
 });
 
