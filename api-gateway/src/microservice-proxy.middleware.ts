@@ -17,6 +17,8 @@ export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
       ""
     )}`;
 
+    console.log(`Proxying request to ${targetUrl}`);
+
     const response = await axios({
       method: req.method,
       url: targetUrl,
@@ -24,8 +26,11 @@ export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
       headers: { ...req.headers, host: new URL(serviceUrl).host },
     });
 
+    console.log(`Response from ${targetUrl}: ${response.status}`);
+
     res.status(response.status).send(response.data);
   } catch (error) {
+    console.log(error);
     res.status(500).send("Internal Server Error");
   }
 }

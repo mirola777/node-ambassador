@@ -24,6 +24,6 @@ createConnection().then(async () => {
   routes(app);
 
   app.listen(port, () => {
-    console.log(`API Gateway is running at http://localhost:${port}`);
+    console.log(`Products Microservice is running at http://localhost:${port}`);
   });
 });
