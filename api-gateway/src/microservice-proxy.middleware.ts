@@ -19,11 +19,15 @@ export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
 
     console.log(`Proxying request to ${targetUrl}`);
 
+    const headers = { ...req.headers };
+    delete headers["if-none-match"];
+    delete headers["if-modified-since"];
+
     const response = await axios({
       method: req.method,
       url: targetUrl,
       data: req.body,
-      headers: { ...req.headers, host: new URL(serviceUrl).host },
+      headers: { ...headers, host: new URL(serviceUrl).host },
     });
 
     console.log(`Response from ${targetUrl}: ${response.status}`);
