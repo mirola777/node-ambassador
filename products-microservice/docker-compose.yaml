@@ -1,6 +1,7 @@
 services:
   products-microservice:
     build: .
+    image: mirola/ambassador-products-microservice:latest
     ports:
       - "${PORT}:${PORT}"
     volumes:
