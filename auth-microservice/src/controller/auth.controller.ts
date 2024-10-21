@@ -22,7 +22,8 @@ export const Register = async (req: Request, res: Response) => {
       password,
     });
 
-    const isAmbassador = req.path.startsWith("/api/ambassador");
+    //   const isAmbassador = req.path.startsWith("/api/ambassador");
+    const isAmbassador = true;
 
     await admin.auth().setCustomUserClaims(userRecord.uid, { isAmbassador });
 

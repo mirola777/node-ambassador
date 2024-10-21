@@ -3,6 +3,10 @@ import admin from "firebase-admin";
 const account = require("../firebase_account_key.json");
 const firebase = require("firebase/app");
 
+import dotenv from "dotenv";
+
+dotenv.config();
+
 import {
   createUserWithEmailAndPassword,
   getAuth,
