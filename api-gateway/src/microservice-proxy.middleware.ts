@@ -5,6 +5,7 @@ import { getMicroserviceUrl } from "./firebase.config";
 export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
   try {
     const microservice = req.params.microservice;
+    const client = req.params.client;
     const serviceUrl = await getMicroserviceUrl(microservice);
 
     if (!serviceUrl) {
@@ -13,8 +14,8 @@ export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
     }
 
     const targetUrl = `${serviceUrl}${req.originalUrl.replace(
-      `/api/${microservice}`,
-      "/api"
+      `/api/${client}/${microservice}`,
+      `/api/${client}`
     )}`;
 
     console.log(`Proxying request to ${targetUrl}`);
