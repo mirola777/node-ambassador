@@ -8,12 +8,10 @@ import { Order } from "../entity/order.entity";
 import { Product } from "../entity/product.entity";
 import { User } from "../entity/user.entity";
 import { client } from "../index";
+import { getOrderRepository } from "../repository/order.repository";
 
 export const Orders = async (req: Request, res: Response) => {
-  const orders = await getRepository(Order).find({
-    where: { complete: true },
-    relations: ["order_items"],
-  });
+  const orders = await getOrderRepository().getCompletedOrders();
 
   res.send(
     orders.map((order: Order) => ({
@@ -48,6 +46,7 @@ export const CreateOrder = async (req: Request, res: Response) => {
     await queryRunner.startTransaction();
 
     let order = new Order();
+
     order.user_id = link.user.id;
     order.ambassador_email = link.user.email;
     order.code = body.code;
@@ -106,33 +105,23 @@ export const CreateOrder = async (req: Request, res: Response) => {
   } catch (e) {
     await queryRunner.rollbackTransaction();
 
-    return res.status(400).send({
-      message: "Error occurred!",
-    });
+    return res.status(400).send({ message: "Error occurred!" });
   }
 };
 
 export const ConfirmOrder = async (req: Request, res: Response) => {
-  const repository = getRepository(Order);
+  const repository = getOrderRepository();
 
-  const order = await repository.findOne({
-    where: {
-      transaction_id: req.body.source,
-    },
-    relations: ["order_items"],
-  });
+  const order = await repository.getByTransactionId(req.body.source);
 
-  if (!order) {
-    return res.status(404).send({
-      message: "Order not found!",
-    });
-  }
+  if (!order) return res.status(404).send({ message: "Order not found!" });
 
   await repository.update(order.id, { complete: true });
 
   const user = await getRepository(User).findOne(order.user_id);
 
   await client.zIncrBy("rankings", order.ambassador_revenue, user.name);
+
   const transporter = createTransport({
     host: "host.docker.internal",
     port: 1025,
@@ -154,7 +143,5 @@ export const ConfirmOrder = async (req: Request, res: Response) => {
 
   await transporter.close();
 
-  res.send({
-    message: "success",
-  });
+  res.send({ message: "success" });
 };
