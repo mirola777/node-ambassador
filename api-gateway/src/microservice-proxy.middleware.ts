@@ -36,15 +36,12 @@ export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
 
     console.log(`Response from ${targetUrl}: ${response.status}`);
 
-    res.status(response.status);
-
-    // Set headers from the response
     Object.entries(response.headers).forEach(([key, value]) => {
       res.setHeader(key, value as string);
     });
 
-    // Send the response data
-    res.send(response.data);
+    // Send the response body
+    res.status(response.status).send(response.data);
   } catch (error) {
     if (error instanceof AxiosError) {
       const axiosError = error as AxiosError;
