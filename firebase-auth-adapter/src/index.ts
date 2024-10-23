@@ -30,7 +30,7 @@ const run = async () => {
       const usersServiceUrl = await getMicroserviceUrl("users");
       const user = JSON.parse(message.message.value.toString());
 
-      await axios.post(`${usersServiceUrl}/create`, user);
+      await axios.post(`${usersServiceUrl}/api/create`, user);
     },
   });
 };
