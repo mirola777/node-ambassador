@@ -11,6 +11,7 @@ const kafkaBroker = process.env.KAFKA_BROKER;
 const kafka = new Kafka({
   clientId: "email-client",
   brokers: [kafkaBroker],
+  ssl: true,
   sasl: {
     mechanism: "plain",
     username: kafkaUsername,
@@ -21,7 +22,7 @@ const kafka = new Kafka({
 const consumer = kafka.consumer({ groupId: "email-consumer" });
 
 const transporter = createTransport({
-  host: "host.docker.internal",
+  host: "10.128.0.11",
   port: 1025,
 });
 
@@ -48,7 +49,7 @@ const run = async () => {
     },
   });
 
-  await transporter.close();
+  transporter.close();
 };
 
 run().then(console.error);
