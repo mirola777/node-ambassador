@@ -5,6 +5,7 @@ import { getMicroserviceUrl } from "./firebase.config";
 export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
   try {
     const microservice = req.params.microservice;
+    const client = req.params.client;
     const serviceUrl = await getMicroserviceUrl(microservice);
 
     if (!serviceUrl) {
@@ -13,21 +14,24 @@ export async function MicroserviceProxyMiddleware(req: Request, res: Response) {
     }
 
     const targetUrl = `${serviceUrl}${req.originalUrl.replace(
-      `/api/${microservice}`,
-      "/api"
+      `/api/${client}/${microservice}`,
+      `/api`
     )}`;
 
     console.log(`Proxying request to ${targetUrl}`);
 
     const headers = { ...req.headers };
+
     delete headers["if-none-match"];
     delete headers["if-modified-since"];
+    delete headers["content-length"];
 
     const response = await axios({
       method: req.method,
       url: targetUrl,
       data: req.body,
       headers: { ...headers, host: new URL(serviceUrl).host },
+      timeout: 5000,
     });
 
     console.log(`Response from ${targetUrl}: ${response.status}`);

@@ -1,33 +1,38 @@
-import express from 'express';
-import cors from 'cors';
-import {createConnection} from "typeorm";
-import {routes} from "./routes";
-import dotenv from 'dotenv';
 import cookieParser from "cookie-parser";
-import {createClient} from "redis";
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+import { createClient } from "redis";
+import { createConnection } from "typeorm";
+import { routes } from "./routes";
 
 dotenv.config();
 
 export const client = createClient({
-    url: 'redis://redis:6379'
+  url: "redis://redis:6379",
 });
 
 createConnection().then(async () => {
-    await client.connect();
+  await client.connect();
 
-    const app = express();
+  const app = express();
 
-    app.use(cookieParser());
-    app.use(express.json());
-    app.use(cors({
-        credentials: true,
-        origin: ['http://localhost:3000', 'http://localhost:4000', 'http://localhost:5000']
-    }));
+  app.use(cookieParser());
+  app.use(express.json());
+  app.use(
+    cors({
+      credentials: true,
+      origin: [
+        "http://localhost:3000",
+        "http://localhost:4000",
+        "http://localhost:5000",
+      ],
+    })
+  );
 
-    routes(app);
+  routes(app);
 
-    app.listen(8000, () => {
-        console.log('listening to port 8000')
-    });
+  app.listen(8000, () => {
+    console.log("listening to port 8000");
+  });
 });
-

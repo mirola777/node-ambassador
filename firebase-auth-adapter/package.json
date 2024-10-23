@@ -13,22 +13,25 @@
   "license": "ISC",
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
+    "@types/cookie-parser": "^1.4.2",
+    "@types/faker": "^5.5.9",
     "@types/node": "^22.7.5",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3",
-    "@types/cookie-parser": "^1.4.2",
-    "@types/faker": "^5.5.9"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
     "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "typeorm": "^0.2.41",
-    "cookie-parser": "^1.4.6",
-    "redis": "^4.0.0",
+    "faker": "^5.5.3",
+    "firebase-admin": "^12.6.0",
+    "kafkajs": "^2.2.4",
     "mysql2": "^2.3.3",
-    "faker": "^5.5.3"
+    "node-cache": "^5.1.2",
+    "redis": "^4.0.0",
+    "typeorm": "^0.2.41"
   }
 }

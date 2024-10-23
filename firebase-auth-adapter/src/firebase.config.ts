@@ -5,7 +5,6 @@ const account = require("../firebase_account_key.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(account),
-  projectId: process.env.FIREBASE_PROJECT_ID,
 });
 
 const cache = new NodeCache({ stdTTL: 60 });
@@ -33,23 +32,6 @@ async function getRemoteConfigGroup(group: string) {
   }
 
   return parameters;
-}
-
-export async function getRemoteConfigValue<T>(key: string) {
-  const cacheKey = `value_${key}`;
-
-  let value = cache.get(cacheKey) as T;
-
-  if (!value) {
-    const remoteConfig = admin.remoteConfig();
-    const template = await remoteConfig.getTemplate();
-
-    value = (template.parameters[key]?.defaultValue as any).value as T;
-
-    cache.set(cacheKey, value);
-  }
-
-  return value;
 }
 
 export const getMicroserviceUrl = async (
