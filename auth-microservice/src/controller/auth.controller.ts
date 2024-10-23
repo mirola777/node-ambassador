@@ -11,6 +11,7 @@ const kafkaBroker = process.env.KAFKA_BROKER;
 const kafka = new Kafka({
   clientId: "user-client",
   brokers: [kafkaBroker],
+  ssl: true,
   sasl: {
     mechanism: "plain",
     username: kafkaUsername,
