@@ -12,6 +12,7 @@ const kafkaBroker = process.env.KAFKA_BROKER;
 const kafka = new Kafka({
   clientId: "user-client",
   brokers: [kafkaBroker],
+  ssl: true,
   sasl: {
     mechanism: "plain",
     username: kafkaUsername,
@@ -26,17 +27,10 @@ const run = async () => {
   await consumer.subscribe({ topic: "create-user" });
   await consumer.run({
     eachMessage: async (message: EachMessagePayload) => {
-      try {
-        const usersServiceUrl = getMicroserviceUrl("users");
-        const user = JSON.parse(message.message.value.toString());
+      const usersServiceUrl = await getMicroserviceUrl("users");
+      const user = JSON.parse(message.message.value.toString());
 
-        console.log(`Received user: ${JSON.stringify(user)}`);
-
-        const response = await axios.post(`${usersServiceUrl}/create`, user);
-        console.log(`User created: ${response.data}`);
-      } catch (error) {
-        console.error(`Error processing message: ${error.message}`);
-      }
+      await axios.post(`${usersServiceUrl}/api/create`, user);
     },
   });
 };
