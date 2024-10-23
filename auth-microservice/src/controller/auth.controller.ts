@@ -1,7 +1,24 @@
 import { Request, Response } from "express";
 
+import { Kafka } from "kafkajs";
 import { admin, getAuth, signInWithEmailAndPassword } from "../firebase.config";
 import { User } from "../model/user.model";
+
+const kafkaUsername = process.env.KAFKA_USERNAME;
+const kafkaPassword = process.env.KAFKA_PASSWORD;
+const kafkaBroker = process.env.KAFKA_BROKER;
+
+const kafka = new Kafka({
+  clientId: "user-client",
+  brokers: [kafkaBroker],
+  sasl: {
+    mechanism: "plain",
+    username: kafkaUsername,
+    password: kafkaPassword,
+  },
+});
+
+const producer = kafka.producer();
 
 export const Register = async (req: Request, res: Response) => {
   const { email, password, password_confirm } = req.body;
@@ -24,9 +41,23 @@ export const Register = async (req: Request, res: Response) => {
     });
 
     //   const isAmbassador = req.path.startsWith("/api/ambassador");
-    const isAmbassador = true;
+    const is_ambassador = true;
 
-    await admin.auth().setCustomUserClaims(userRecord.uid, { isAmbassador });
+    await admin.auth().setCustomUserClaims(userRecord.uid, { is_ambassador });
+
+    const user: User = {
+      ...req.body,
+      id: userRecord.uid,
+      email,
+      is_ambassador,
+    };
+
+    // send to Kafka
+    await producer.connect();
+    await producer.send({
+      topic: "create-user",
+      messages: [{ value: JSON.stringify(user) }],
+    });
 
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
@@ -99,9 +130,10 @@ export const Verify = async (req: Request, res: Response, next: Function) => {
       });
     }
 
-    res
-      .status(200)
-      .send({ message: "User verified successfully", user: decodedToken });
+    res.status(200).send({
+      id: decodedToken.uid,
+      is_ambassador: decodedToken.is_ambassador,
+    });
   } catch (e) {
     return res.status(401).send({
       message: "unauthenticated",
@@ -109,18 +141,18 @@ export const Verify = async (req: Request, res: Response, next: Function) => {
   }
 };
 
-export const UpdatePassword = async (req: Request, res: Response) => {
-  const user = req["user"];
-
-  if (req.body.password !== req.body.password_confirm) {
-    return res.status(400).send({
-      message: "Password's do not match!",
-    });
-  }
-
-  await getRepository(User).update(user.id, {
-    password: await bcryptjs.hash(req.body.password, 10),
-  });
-
-  res.send(user);
-};
+//export const UpdatePassword = async (req: Request, res: Response) => {
+//  const user = req["user"];
+//
+//  if (req.body.password !== req.body.password_confirm) {
+//    return res.status(400).send({
+//      message: "Password's do not match!",
+//    });
+//  }
+//
+//  await getRepository(User).update(user.id, {
+//    password: await bcryptjs.hash(req.body.password, 10),
+//  });
+//
+//  res.send(user);
+//};

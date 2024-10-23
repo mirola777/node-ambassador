@@ -27,7 +27,7 @@ const transporter = createTransport({
 
 const run = async () => {
   await consumer.connect();
-  await consumer.subscribe({ topic: "test" });
+  await consumer.subscribe({ topic: "email" });
   await consumer.run({
     eachMessage: async (message: EachMessagePayload) => {
       const order = JSON.parse(message.message.value.toString());

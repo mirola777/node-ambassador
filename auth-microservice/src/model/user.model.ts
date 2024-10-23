@@ -1,9 +1,7 @@
 export class User {
-  public id: string;
-  public email: string;
-  public password: string;
-  public role: string;
-  public created_at: string;
-  public updated_at: string;
-  public deleted_at: string;
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_ambassador: boolean;
 }
