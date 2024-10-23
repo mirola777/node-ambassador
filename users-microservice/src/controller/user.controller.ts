@@ -7,7 +7,13 @@ export const Ambassadors = async (req: Request, res: Response) => {
 };
 
 export const AuthenticatedUser = async (req: Request, res: Response) => {
-  const user = req["user"];
+  const userId = req.headers["user-id"] as string;
+
+  if (!userId) {
+    return res.sendStatus(401);
+  }
+
+  const user = await getRepository(User).findOne(userId);
 
   if (req.path === "/api/admin/user") {
     return res.send(user);
@@ -27,13 +33,17 @@ export const AuthenticatedUser = async (req: Request, res: Response) => {
 };
 
 export const UpdateInfo = async (req: Request, res: Response) => {
-  const user = req["user"];
+  const userId = req.headers["user-id"] as string;
+
+  if (!userId) {
+    return res.sendStatus(401);
+  }
 
   const repository = getRepository(User);
 
-  await repository.update(user.id, req.body);
+  await repository.update(userId, req.body);
 
-  res.send(await repository.findOne(user.id));
+  res.send(await repository.findOne(userId));
 };
 
 export const Create = async (req: Request, res: Response) => {
