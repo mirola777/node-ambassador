@@ -29,9 +29,10 @@ const run = async () => {
       try {
         const usersServiceUrl = getMicroserviceUrl("users");
         const user = JSON.parse(message.message.value.toString());
+
         console.log(`Received user: ${JSON.stringify(user)}`);
 
-        const response = await axios.post(`${usersServiceUrl}/`, user);
+        const response = await axios.post(`${usersServiceUrl}/create`, user);
         console.log(`User created: ${response.data}`);
       } catch (error) {
         console.error(`Error processing message: ${error.message}`);
