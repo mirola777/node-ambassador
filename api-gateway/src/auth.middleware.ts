@@ -42,13 +42,11 @@ export async function AuthMiddleware(
       req.headers["user-id"] = authResponse.data.id;
       req.headers["is-ambassador"] = authResponse.data.is_ambassador;
 
-      next();
+      return next();
     } catch (error) {
       return res.status(401).send({ message: "unauthenticated" });
     }
-
-    next();
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error" });
+    return res.status(500).send({ message: "Internal Server Error" });
   }
 }
