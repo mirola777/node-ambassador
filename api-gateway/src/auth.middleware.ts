@@ -35,11 +35,14 @@ export async function AuthMiddleware(
         headers: { ...headers, host: new URL(authServiceUrl).host },
       });
 
-      console.log(authResponse.data);
-
       if (authResponse.status !== 200) {
         return res.status(401).send({ message: "unauthenticated" });
       }
+
+      req.headers["user-id"] = authResponse.data.id;
+      req.headers["is-ambassador"] = authResponse.data.is_ambassador;
+
+      next();
     } catch (error) {
       return res.status(401).send({ message: "unauthenticated" });
     }
