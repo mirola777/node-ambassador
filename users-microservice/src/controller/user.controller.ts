@@ -32,6 +32,10 @@ export const AuthenticatedUser = async (req: Request, res: Response) => {
   res.send(user);
 };
 
+export const GetUser = async (req: Request, res: Response) => {
+  res.send(await getRepository(User).findOne(req.params.id));
+};
+
 export const UpdateInfo = async (req: Request, res: Response) => {
   const userId = req.headers["user-id"] as string;
 

@@ -1,16 +1,11 @@
 import { Router } from "express";
-import {
-  CreateLink,
-  GetLink,
-  Links,
-  Stats,
-} from "./controller/link.controller";
+import { CreateLink, GetLink, Links } from "./controller/link.controller";
 import {
   ConfirmOrder,
   CreateOrder,
   Orders,
 } from "./controller/order.controller";
-import { Rankings } from "./controller/user.controller";
+import { Rankings, Stats } from "./controller/stats.controller";
 
 export const routes = (router: Router) => {
   router.get("/api/stats", Stats);
