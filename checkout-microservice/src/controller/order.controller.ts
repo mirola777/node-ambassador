@@ -1,14 +1,28 @@
 import { Request, Response } from "express";
-import { createTransport } from "nodemailer";
+import { Kafka } from "kafkajs";
 import Stripe from "stripe";
 import { getConnection, getRepository } from "typeorm";
 import { Link } from "../entity/link.entity";
 import { OrderItem } from "../entity/order-item.entity";
 import { Order } from "../entity/order.entity";
-import { Product } from "../entity/product.entity";
-import { User } from "../entity/user.entity";
+import { getMicroserviceUrl } from "../firebase.config";
 import { client } from "../index";
 import { getOrderRepository } from "../repository/order.repository";
+
+const kafkaUsername = process.env.KAFKA_USERNAME;
+const kafkaPassword = process.env.KAFKA_PASSWORD;
+const kafkaBroker = process.env.KAFKA_BROKER;
+
+const kafka = new Kafka({
+  clientId: "email-client",
+  brokers: [kafkaBroker],
+  ssl: true,
+  sasl: {
+    mechanism: "plain",
+    username: kafkaUsername,
+    password: kafkaPassword,
+  },
+});
 
 export const Orders = async (req: Request, res: Response) => {
   const orders = await getOrderRepository().getCompletedOrders();
@@ -30,14 +44,18 @@ export const CreateOrder = async (req: Request, res: Response) => {
 
   const link = await getRepository(Link).findOne({
     where: { code: body.code },
-    relations: ["user"],
   });
 
-  if (!link) {
-    return res.status(400).send({
-      message: "Invalid link!",
-    });
-  }
+  if (!link) return res.status(400).send({ message: "Invalid link!" });
+
+  const usersMicroserviceUrl = await getMicroserviceUrl("users");
+
+  const response = await fetch(`${usersMicroserviceUrl}/api/${link.user_id}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const user = await response.json();
 
   const queryRunner = getConnection().createQueryRunner();
 
@@ -47,8 +65,8 @@ export const CreateOrder = async (req: Request, res: Response) => {
 
     let order = new Order();
 
-    order.user_id = link.user.id;
-    order.ambassador_email = link.user.email;
+    order.user_id = user.id;
+    order.ambassador_email = user.email;
     order.code = body.code;
     order.first_name = body.first_name;
     order.last_name = body.last_name;
@@ -63,7 +81,17 @@ export const CreateOrder = async (req: Request, res: Response) => {
     const line_items = [];
 
     for (let p of body.products) {
-      const product = await getRepository(Product).findOne(p.product_id);
+      const productsServiceUrl = await getMicroserviceUrl("products");
+
+      const response = await fetch(
+        `${productsServiceUrl}/api/${p.product_id}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      const product = await response.json();
 
       const orderItem = new OrderItem();
       orderItem.order = order;
@@ -118,30 +146,24 @@ export const ConfirmOrder = async (req: Request, res: Response) => {
 
   await repository.update(order.id, { complete: true });
 
-  const user = await getRepository(User).findOne(order.user_id);
+  const usersMicroserviceUrl = await getMicroserviceUrl("users");
+
+  const response = await fetch(`${usersMicroserviceUrl}/api/${order.user_id}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const user = await response.json();
 
   await client.zIncrBy("rankings", order.ambassador_revenue, user.name);
 
-  const transporter = createTransport({
-    host: "host.docker.internal",
-    port: 1025,
-  });
+  const kafkaProducer = kafka.producer();
 
-  await transporter.sendMail({
-    from: "from@example.com",
-    to: "admin@admin.com",
-    subject: "An order has been completed",
-    html: `Order #${order.id} with a total of $${order.total} has been completed`,
+  await kafkaProducer.connect();
+  await kafkaProducer.send({
+    topic: "email",
+    messages: [{ value: JSON.stringify(order) }],
   });
-
-  await transporter.sendMail({
-    from: "from@example.com",
-    to: order.ambassador_email,
-    subject: "An order has been completed",
-    html: `You earned $${order.ambassador_revenue} from the link #${order.code}`,
-  });
-
-  await transporter.close();
 
   res.send({ message: "success" });
 };

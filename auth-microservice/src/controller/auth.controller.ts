@@ -123,8 +123,8 @@ export const Verify = async (req: Request, res: Response, next: Function) => {
     const isAmbassador = req.path.startsWith("/api/ambassador");
 
     if (
-      (isAmbassador && !decodedToken.isAmbassador) ||
-      (!isAmbassador && decodedToken.isAmbassador)
+      (isAmbassador && !decodedToken.is_ambassador) ||
+      (!isAmbassador && decodedToken.is_ambassador)
     ) {
       return res.status(401).send({
         message: "unauthorized",

@@ -7,3 +7,22 @@ services:
       - .:/app
     env_file:
       - .env
+    depends_on:
+      - checkout-db
+      - checkout-redis
+
+  checkout-db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: ambassador-checkout
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - .dbdata:/var/lib/mysql
+    ports:
+      - "33066:3306"
+
+  checkout-redis:
+    image: redis
+    ports:
+      - "6379:6379"
