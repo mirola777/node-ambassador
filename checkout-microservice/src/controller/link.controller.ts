@@ -14,7 +14,7 @@ export const Links = async (req: Request, res: Response) => {
 };
 
 export const CreateLink = async (req: Request, res: Response) => {
-  const user_id = req["user-id"];
+  const user_id = req.headers["user-id"] as string;
 
   const link = await getRepository(Link).save({
     user_id,
