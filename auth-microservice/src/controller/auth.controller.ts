@@ -96,6 +96,52 @@ export const Login = async (req: Request, res: Response) => {
     });
 };
 
+export const GoogleSignIn = async (req: Request, res: Response) => {
+  const { idToken } = req.body;
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    try {
+      await admin.auth().getUser(uid);
+    } catch (error) {
+      const userRecord = await admin.auth().createUser({
+        uid,
+        email: decodedToken.email,
+        displayName: decodedToken.name,
+        photoURL: decodedToken.picture,
+      });
+
+      const is_ambassador = req.path.startsWith("/api/ambassador");
+
+      await admin.auth().setCustomUserClaims(userRecord.uid, { is_ambassador });
+
+      const user: User = {
+        id: userRecord.uid,
+        first_name: userRecord.displayName,
+        last_name: "",
+        email: userRecord.email,
+        is_ambassador,
+      };
+
+      await producer.connect();
+      await producer.send({
+        topic: "create-user",
+        messages: [{ value: JSON.stringify(user) }],
+      });
+    }
+
+    const customToken = await admin.auth().createCustomToken(uid);
+
+    res
+      .status(201)
+      .json({ message: "Google sign in successful", token: customToken });
+  } catch (error) {
+    res.status(400).send({ message: error.message });
+  }
+};
+
 export const Logout = async (req: Request, res: Response) => {
   res.clearCookie("access_token");
   res.status(200).json({ message: "User logged out successfully" });
