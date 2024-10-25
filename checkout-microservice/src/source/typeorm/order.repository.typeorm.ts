@@ -18,7 +18,12 @@ export class OrderRepositoryTypeORM implements OrderRepository {
   getByTransactionId(transactionId: string): Promise<Order | null> {
     const repository = getRepository(Order);
 
-    return repository.findOne({ transaction_id: transactionId });
+    return repository.findOne({
+      where: {
+        transaction_id: transactionId,
+      },
+      relations: ["order_items"],
+    });
   }
 
   async update(id: number, data: Partial<Order>): Promise<Order> {

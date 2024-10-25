@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import { Link } from "../entity/link.entity";
+import { getMicroserviceUrl } from "../firebase.config";
 
 export const Links = async (req: Request, res: Response) => {
   const links = await getRepository(Link).find({
@@ -26,10 +27,22 @@ export const CreateLink = async (req: Request, res: Response) => {
 };
 
 export const GetLink = async (req: Request, res: Response) => {
-  res.send(
-    await getRepository(Link).findOne({
-      where: { code: req.params.code },
-      relations: ["products"],
+  const link = await getRepository(Link).findOne({
+    where: { code: req.params.code },
+  });
+
+  const productsServiceUrl = await getMicroserviceUrl("products");
+
+  const products = await Promise.all(
+    link.products.map(async (p) => {
+      const response = await fetch(`${productsServiceUrl}/api/${p}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      return response.json();
     })
   );
+
+  res.send({ ...link, products });
 };

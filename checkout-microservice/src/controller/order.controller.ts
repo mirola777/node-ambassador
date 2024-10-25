@@ -155,7 +155,7 @@ export const ConfirmOrder = async (req: Request, res: Response) => {
 
   const user = await response.json();
 
-  await client.zIncrBy("rankings", order.ambassador_revenue, user.name);
+  await client.zIncrBy("rankings", order.ambassador_revenue, user.first_name);
 
   const kafkaProducer = kafka.producer();
 
