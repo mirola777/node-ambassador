@@ -103,40 +103,39 @@ export const GoogleSignIn = async (req: Request, res: Response) => {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
-    try {
-      await admin.auth().getUser(uid);
-    } catch (error) {
-      const userRecord = await admin.auth().createUser({
-        uid,
-        email: decodedToken.email,
-        displayName: decodedToken.name,
-        photoURL: decodedToken.picture,
-      });
+    const userRecord = await admin.auth().getUser(uid);
 
-      const is_ambassador = req.path.startsWith("/api/ambassador");
+    const hasCustomClaims =
+      userRecord.customClaims?.is_ambassador !== undefined;
 
-      await admin.auth().setCustomUserClaims(userRecord.uid, { is_ambassador });
-
-      const user: User = {
-        id: userRecord.uid,
-        first_name: userRecord.displayName,
-        last_name: "",
-        email: userRecord.email,
-        is_ambassador,
-      };
-
-      await producer.connect();
-      await producer.send({
-        topic: "create-user",
-        messages: [{ value: JSON.stringify(user) }],
-      });
+    if (hasCustomClaims) {
+      const token = await admin.auth().createCustomToken(uid);
+      return res
+        .status(200)
+        .json({ message: "Google sign in successful", token });
     }
 
-    const customToken = await admin.auth().createCustomToken(uid);
+    const is_ambassador = req.path.startsWith("/api/ambassador");
+
+    await admin.auth().setCustomUserClaims(userRecord.uid, { is_ambassador });
+
+    const user: User = {
+      id: userRecord.uid,
+      first_name: userRecord.displayName,
+      last_name: "",
+      email: userRecord.email,
+      is_ambassador,
+    };
+
+    await producer.connect();
+    await producer.send({
+      topic: "create-user",
+      messages: [{ value: JSON.stringify(user) }],
+    });
 
     res
       .status(201)
-      .json({ message: "Google sign in successful", token: customToken });
+      .json({ message: "Google sign in successful", token: idToken });
   } catch (error) {
     res.status(400).send({ message: error.message });
   }
