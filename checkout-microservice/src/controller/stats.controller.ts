@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import { Link } from "../entity/link.entity";
+import { Order } from "../entity/order.entity";
 import { client } from "../index";
 
 export const Rankings = async (req: Request, res: Response) => {
@@ -47,4 +48,20 @@ export const Stats = async (req: Request, res: Response) => {
       };
     })
   );
+};
+
+export const GetRevenue = async (req: Request, res: Response) => {
+  const user_id = req.headers["user-id"] as string;
+
+  const orders = await getRepository(Order).find({
+    where: {
+      user_id: user_id,
+      complete: true,
+    },
+    relations: ["order_items"],
+  });
+
+  const revenue = orders.reduce((s, o) => s + o.ambassador_revenue, 0);
+
+  res.send({ revenue });
 };

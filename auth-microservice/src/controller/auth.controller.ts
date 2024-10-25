@@ -142,18 +142,16 @@ export const Verify = async (req: Request, res: Response, next: Function) => {
   }
 };
 
-//export const UpdatePassword = async (req: Request, res: Response) => {
-//  const user = req["user"];
-//
-//  if (req.body.password !== req.body.password_confirm) {
-//    return res.status(400).send({
-//      message: "Password's do not match!",
-//    });
-//  }
-//
-//  await getRepository(User).update(user.id, {
-//    password: await bcryptjs.hash(req.body.password, 10),
-//  });
-//
-//  res.send(user);
-//};
+export const UpdatePassword = async (req: Request, res: Response) => {
+  const userId = req.headers["user-id"] as string;
+
+  if (req.body.password !== req.body.password_confirm) {
+    return res.status(400).send({
+      message: "Password's do not match!",
+    });
+  }
+
+  await admin.auth().updateUser(userId, { password: req.body.password });
+
+  res.send({ message: "Password updated successfully" });
+};

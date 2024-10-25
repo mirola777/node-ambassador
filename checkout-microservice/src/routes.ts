@@ -5,11 +5,12 @@ import {
   CreateOrder,
   Orders,
 } from "./controller/order.controller";
-import { Rankings, Stats } from "./controller/stats.controller";
+import { GetRevenue, Rankings, Stats } from "./controller/stats.controller";
 
 export const routes = (router: Router) => {
   router.get("/api/stats", Stats);
   router.get("/api/rankings", Rankings);
+  router.post("/api/revenue", GetRevenue);
   router.get("/api/users/:id/links", Links);
   router.post("/api/links", CreateLink);
   router.get("/api/links/:code", GetLink);
