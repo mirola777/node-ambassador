@@ -105,14 +105,12 @@ export const GoogleSignIn = async (req: Request, res: Response) => {
 
     const userRecord = await admin.auth().getUser(uid);
 
-    const hasCustomClaims =
-      userRecord.customClaims?.is_ambassador !== undefined;
+    const hasCustomClaims = userRecord.customClaims?.is_ambassador !== null;
 
     if (hasCustomClaims) {
-      const token = await admin.auth().createCustomToken(uid);
       return res
         .status(200)
-        .json({ message: "Google sign in successful", token });
+        .json({ message: "Google sign in successful", idToken });
     }
 
     const is_ambassador = req.path.startsWith("/api/ambassador");
