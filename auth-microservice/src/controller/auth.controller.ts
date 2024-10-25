@@ -41,8 +41,7 @@ export const Register = async (req: Request, res: Response) => {
       password,
     });
 
-    //   const isAmbassador = req.path.startsWith("/api/ambassador");
-    const is_ambassador = true;
+    const is_ambassador = req.path.startsWith("/api/ambassador");
 
     await admin.auth().setCustomUserClaims(userRecord.uid, { is_ambassador });
 
@@ -82,12 +81,9 @@ export const Login = async (req: Request, res: Response) => {
     .then((userCredential: any) => {
       const idToken = userCredential._tokenResponse.idToken;
       if (idToken) {
-        res.cookie("access_token", idToken, {
-          httpOnly: true,
-          sameSite: "none",
-          secure: true,
-        });
-        res.status(200).json({ message: "User logged in successfully" });
+        res
+          .status(200)
+          .json({ message: "User logged in successfully", token: idToken });
       } else {
         res.status(500).json({ error: "Internal Server Error" });
       }
@@ -107,7 +103,7 @@ export const Logout = async (req: Request, res: Response) => {
 
 export const Verify = async (req: Request, res: Response, next: Function) => {
   try {
-    const idToken = req.cookies.access_token;
+    const idToken = req.headers.authorization?.split("Bearer ")[1];
 
     if (!idToken) {
       return res.status(403).json({ error: "No token provided" });
