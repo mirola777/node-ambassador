@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  GoogleSignIn,
   Login,
   Logout,
   Register,
@@ -13,4 +14,5 @@ export const routes = (router: Router) => {
   router.post("/api/register", Register);
   router.post("/api/verify", Verify);
   router.put("/api/password", UpdatePassword);
+  router.post("/api/google", GoogleSignIn);
 };
