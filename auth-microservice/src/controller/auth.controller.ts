@@ -41,8 +41,7 @@ export const Register = async (req: Request, res: Response) => {
       password,
     });
 
-       const is_ambassador = req.path.startsWith("/api/ambassador");
-
+    const is_ambassador = req.path.startsWith("/api/ambassador");
 
     await admin.auth().setCustomUserClaims(userRecord.uid, { is_ambassador });
 
@@ -82,9 +81,9 @@ export const Login = async (req: Request, res: Response) => {
     .then((userCredential: any) => {
       const idToken = userCredential._tokenResponse.idToken;
       if (idToken) {
-        res.status(200).json({ message: "User logged in successfully", 
-          token: idToken
-         });
+        res
+          .status(200)
+          .json({ message: "User logged in successfully", token: idToken });
       } else {
         res.status(500).json({ error: "Internal Server Error" });
       }
