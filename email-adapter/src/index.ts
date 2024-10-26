@@ -33,18 +33,28 @@ const run = async () => {
     eachMessage: async (message: EachMessagePayload) => {
       const order = JSON.parse(message.message.value.toString());
 
+      const admin_revenue = order.order_items.reduce(
+        (acc: number, item: any) => acc + item.admin_revenue,
+        0
+      );
+
+      const ambassador_revenue = order.order_items.reduce(
+        (acc: number, item: any) => acc + item.ambassador_revenue,
+        0
+      );
+
       await transporter.sendMail({
         from: "from@example.com",
         to: "admin@admin.com",
         subject: "An order has been completed",
-        html: `Order #${order.id} with a total of $${order.admin_revenue} has been completed`,
+        html: `Order #${order.id} with a total of $${admin_revenue} has been completed`,
       });
 
       await transporter.sendMail({
         from: "from@example.com",
         to: order.ambassador_email,
         subject: "An order has been completed",
-        html: `You earned $${order.ambassador_revenue} from the link #${order.code}`,
+        html: `You earned $${ambassador_revenue} from the link #${order.code}`,
       });
     },
   });
