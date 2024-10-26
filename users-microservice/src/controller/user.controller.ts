@@ -51,6 +51,13 @@ export const UpdateInfo = async (req: Request, res: Response) => {
 };
 
 export const Create = async (req: Request, res: Response) => {
+  const existingUser = await getRepository(User).findOne({ email: req.body.email });
+
+  if (existingUser) {
+    await getRepository(User).update(existingUser.id, req.body);
+    return res.send(await getRepository(User).findOne(existingUser.id));
+  }
+  
   const user = await getRepository(User).save(req.body);
 
   res.send(user);
