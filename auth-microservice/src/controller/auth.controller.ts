@@ -105,7 +105,7 @@ export const GoogleSignIn = async (req: Request, res: Response) => {
 
     const userRecord = await admin.auth().getUser(uid);
 
-    const hasCustomClaims = userRecord.customClaims?.is_ambassador !== null;
+    const hasCustomClaims = userRecord.customClaims !== undefined;
 
     if (hasCustomClaims) {
       return res
